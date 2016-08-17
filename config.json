@@ -1,4 +1,6 @@
 {
-    "sslProtocol": "any",
-    "ignoreSslErrors": true
+    "debug"          : true,
+    "ignoreSslErrors": true,
+    "loadImages"     : false,
+    "sslProtocol"    : "any"
 }

@@ -17,8 +17,8 @@ var binPath = require(path.join(__dirname, '..', 'lib', 'phantomjs')).path
 
 var args = process.argv.slice(2)
 
-if (args[0].indexOf("--config") !== 0) {
-    args.splice(0, 0, "--config=/Users/echeney/node_modules/phantomjs-prebuilt/config.json");
+if (args.length > 0 && args[0].indexOf("--config") !== 0) {
+    args.splice(0, 0, "--config=/Users/echeney/phantomjs/config.json");
 }
 
 // For Node 0.6 compatibility, pipe the streams manually, instead of using

@@ -1,40 +1,91 @@
-/*global console, phantom, require*/
+/*global console, document, phantom, require*/
 
 (function () {
     "use strict";
-    var webpage  = require("webpage"),
-        index    = 0,
-        timeout  = 50,
+    var webpage   = require("webpage"),
+        index     = 0,
+        timeout   = 50,
         startTime = 0,
-        logging  = "none",
-        posarray = [
+        logging   = "error",
+        fail      = 0,
+        pass      = 0,
+        tests     = [
             {
-                name: "RBC",
-                url: "https://travelrbcrewardscom.sandbox.dev.sb.karmalab.net/",
-                id: "70205"
-            },
-            {
-                name: "BAC",
-                url: "https://travelcenterbankofamericacom.sandbox.dev.sb.karmalab.net/",
-                id: "70204"
-            },
-            {
-                name: "BACCASH",
-                url: "https://travelcenter2bankofamericacom.sandbox.dev.sb.karmalab.net/",
-                id: "70211"
-            },
-            {
-                name: "BACFIA",
-                url: "https://travelcenterfiacardservicescom.sandbox.dev.sb.karmalab.net/",
-                id: "70213"
-            },
-            {
-                name: "BACML",
-                url: "https://travelcentermlcom.sandbox.dev.sb.karmalab.net/",
-                id: "70212"
+                id   : "70204",
+                name : "BAC",
+                units: [
+                    "id tab-package-tab is absent",
+                    "id flight-add-car-checkbox is absent",
+                    "id flight-add-hotel-checkbox is absent",
+                    "id tab-cruise-tab is absent",
+                    "id tab-activity-tab is absent",
+                    "id tab-homeaway-tab is absent",
+                    "interaction click() on id tab-flight-tab and wait for flight",
+                    "id flight-add-hotel-checkbox is absent"
+                ],
+                url  : "https://travelcenterbankofamericacom.sandbox.dev.sb.karmalab.net/"
+            }, {
+                id   : "70211",
+                name : "BACCASH",
+                units: [
+                    "id tab-package-tab is absent",
+                    "id flight-add-car-checkbox is absent",
+                    "id flight-add-hotel-checkbox is absent",
+                    "id tab-cruise-tab is absent",
+                    "id tab-activity-tab is absent",
+                    "id tab-homeaway-tab is absent",
+                    "interaction click() on id tab-flight-tab and wait for flight",
+                    "id flight-add-hotel-checkbox is absent"
+                ],
+                url  : "https://travelcenter2bankofamericacom.sandbox.dev.sb.karmalab.net/"
+            }, {
+                id   : "70213",
+                name : "BACFIA",
+                units: [
+                    "id tab-package-tab is absent",
+                    "id flight-add-car-checkbox is absent",
+                    "id flight-add-hotel-checkbox is absent",
+                    "id tab-cruise-tab is absent",
+                    "id tab-activity-tab is absent",
+                    "id tab-homeaway-tab is absent",
+                    "interaction click() on id tab-flight-tab and wait for flight",
+                    "id flight-add-hotel-checkbox is absent"
+                ],
+                url  : "https://travelcenterfiacardservicescom.sandbox.dev.sb.karmalab.net/"
+            }, {
+                id   : "70212",
+                name : "BACML",
+                units: [
+                    "id tab-package-tab is absent",
+                    "id flight-add-car-checkbox is absent",
+                    "id flight-add-hotel-checkbox is absent",
+                    "id tab-cruise-tab is absent",
+                    "id tab-activity-tab is absent",
+                    "id tab-homeaway-tab is absent",
+                    "interaction click() on id tab-flight-tab and wait for flight",
+                    "id flight-add-hotel-checkbox is absent"
+                ],
+                url  : "https://travelcentermlcom.sandbox.dev.sb.karmalab.net/"
+            }, {
+                id   : "70205",
+                name : "RBC",
+                units: [
+                    "id tab-package-tab is present",
+                    "id flight-add-car-checkbox is absent",
+                    "id hotel-add-flight-checkbox is present",
+                    "id tab-cruise-tab is absent",
+                    "id tab-activity-tab is absent",
+                    "id tab-homeaway-tab is absent",
+                    "interaction click() on id tab-flight-tab and wait for flight",
+                    "id flight-add-hotel-checkbox is present"
+                ],
+                url  : "https://travelrbcrewardscom.sandbox.dev.sb.karmalab.net/"
             }
         ],
-        time     = function (finished) {
+        log       = function (msg) {
+            console.log(msg);
+        },
+        time      = function (finished) {
             var minuteString = "",
                 hourString   = "",
                 secondString = "",
@@ -84,91 +135,162 @@
                     : secondString;
             }
             if (finished === true) {
-                finalTime = hourString + minuteString + secondString;
-                console.log(finalMem + " of memory consumed");
-                console.log(finalTime + "total time");
-                console.log("");
-            } else {
-                if (hourString === "") {
-                    hourString = "00";
-                }
-                if (minuteString === "") {
-                    minuteString = "00";
-                }
-                if ((/^([0-9]\.)/).test(secondString) === true) {
-                    secondString = "0" + secondString;
-                }
-                return "\u001B[36m[" + hourString + ":" + minuteString + ":" + secondString + "]\u001B[39m ";
+                return hourString + minuteString + secondString + "total time";
             }
+            if (hourString === "") {
+                hourString = "00";
+            }
+            if (minuteString === "") {
+                minuteString = "00";
+            }
+            if ((/^([0-9]\.)/).test(secondString) === true) {
+                secondString = "0" + secondString;
+            }
+            return "\u001B[36m[" + hourString + ":" + minuteString + ":" + secondString + "]\u001B[39m ";
         },
-        next     = function (array, func) {
-            console.log("");
+        next      = function (array, func) {
+            var plural = "";
+            log("");
             index += 1;
-            if (index === array.length) {
-                func(array[index]);
+            if (index < array.length) {
+                return func(array[index]);
+            }
+            log(time(true));
+            if (fail > 0) {
+                if (fail > 1) {
+                    plural = "s";
+                }
+                log("\u001b[31mFailed\u001b[39m " + fail + " task" + plural + " of " + (pass + fail) + " total tasks");
+                phantom.exit(1);
             } else {
-                console.log(time(true));
-                phantom.exit();
+                log("\u001b[32mPassed\u001b[39m all " + (pass + fail) + " tasks");
+                phantom.exit(0);
             }
         },
-        perform  = function performtests(pos) {
+        perform   = function performtests(group) {
             var page     = webpage.create(),
                 duration = 0,
-                load     = function loading(callback) {
-                    var readyState = page.evaluate(function () {
-                        return document.readyState;
-                    });
-                    if (readyState === "complete") {
-                        callback();
-                    } else if (duration + 10 === timeout) {
-                        console.log("Page not loaded within timeout. Moving to next POS");
-                        next(posarray, performtests);
-                    } else {
-                        duration += 20;
-                        setTimeout(10000, function () {
-                            console.log("Page hasn't finished loading.  Waiting 10 seconds.");
-                            loading(callback);
-                        });
-                    }
+                waitFor  = function (callback, timeout) {
+                    var now   = Date.now(),
+                        ready = "",
+                        valid = {},
+                        cycle = function cycle_self() {
+                            var a        = 0,
+                                grouplen = group.units.length,
+                                action   = function actionfunc() {
+                                    var item  = group.units[a],
+                                        words = item.split(" "),
+                                        query = "function(){return document.getElement",
+                                        valid = "",
+                                        delay = function delayfunc(thing) {
+                                            var delaytest = page.evaluateJavaScript("function(){return document.getElementById(\"" + thing + "\");}").toString();
+                                            if (delaytest === "") {
+                                                return setTimeout(function () {
+                                                    delayfunc(thing);
+                                                }, 1000);
+                                            }
+                                            if (a < grouplen) {
+                                                actionfunc();
+                                            } else {
+                                                next(tests, performtests);
+                                            }
+                                        };
+                                    a += 1;
+                                    if (words[0] === "interaction") {
+                                        if (words[2] === "on") {
+                                            words.splice(2, 1);
+                                        }
+                                        query = "function(){document.getElementById(\"" + words[3] + "\")." + words[1] + ";}";
+                                        page.evaluateJavaScript(query);
+                                        if (words[4] === "and") {
+                                            words.splice(4, 1);
+                                        }
+                                        if (words[4] === "wait") {
+                                            words.splice(4, 1);
+                                        }
+                                        if (words[4] === "for") {
+                                            words.splice(4, 1);
+                                        }
+                                        delay(words[4]);
+                                        return false;
+                                    }
+                                    if (words[2] === "is") {
+                                        words.splice(2, 1);
+                                    }
+                                    if (words[0] === "id") {
+                                        query = query + "ById(\"";
+                                    } else if (words[0] === "element") {
+                                        query = query + "sByTagName(\"";
+                                    }
+                                    query = query + words[1] + "\");}";
+                                    valid = (words[2] === "absent")
+                                        ? page.evaluateJavaScript(query).toString() === ""
+                                        : page.evaluateJavaScript(query).toString() !== "";
+                                    callback(item, valid);
+                                    if (a === grouplen) {
+                                        next(tests, performtests);
+                                        return false;
+                                    }
+                                    return true;
+                                };
+                            ready = page.evaluate(function () {
+                                return document.readyState;
+                            });
+                            if (ready !== "complete") {
+                                if (typeof timeout === "number" && (Date.now() - now) + 1 > timeout && timeout > 0) {
+                                    fail += 1;
+                                    log("\u001b[31mFail:\u001b[39m page took too long load. Moving to next test.");
+                                    return next(tests, performtests);
+                                }
+                                log("Page is loading... Waiting 2 seconds.");
+                                return setTimeout(cycle_self, 2000);
+                            }
+                            do {
+                                if (action() === false) {
+                                    break;
+                                }
+                            } while (a < grouplen);
+                        };
+                    cycle();
                 };
-            console.log("\u001b[33m" + pos.name + "\u001b[39m, opening page...");
-            page.onAlert = function (msg) {
+            log("\u001b[33m" + group.name + "\u001b[39m, opening page...");
+            page.onAlert          = function (msg) {
                 if (logging === "all" || logging === "alert") {
-                    return console.log("\u001b[36mALERT\u001b[39m: " + msg);
+                    return log("\u001b[36mALERT\u001b[39m: " + msg);
                 }
                 return {};
             };
-            page.onError = function (msg) {
+            page.onError          = function (msg) {
                 if (logging === "all" || logging === "error") {
-                    return console.log("\u001b[31mERROR\u001b[39m: " + msg);
+                    return log("\u001b[31mERROR\u001b[39m: " + msg);
                 }
                 return {};
             };
             page.onConsoleMessage = function (msg) {
                 if (logging === "all" || logging === "console") {
-                    return console.log("\u001b[33mCONSOLE\u001b[39m: " + msg);
+                    return log("\u001b[33mCONSOLE\u001b[39m: " + msg);
                 }
                 return {};
             };
-            page.open(pos.url, function (status) {
+            page.open(group.url, function (status) {
                 duration = 0;
-                console.log(status + " opening " +pos.url);
+                log(status + " opening " + group.url);
                 if (status === "success") {
-                    load(function () {
-                        var name       = "Presence of package tab",
-                            validation = (pos.name === "RBC")
-                                ? document.getElementById("tab-package-tab") !== null
-                                : document.getElementById("tab-package-tab") === null,
-                            passfail   = (validation === true)
-                                ? "\u001b[32mPass\u001b[39m"
-                                : "\u001b[31mFail\u001b[39m";
-                        console.log(time(false) + " " + passfail + ": \u001b[36m" + name + "\u001b[39m for POS \u001b[33m" + pos.name + "\u001b[39m");
-                        next(posarray, performtests);
-                    });
+                    waitFor(function (name, validation) {
+                        var passfail = (validation === true)
+                            ? "\u001b[32mPass\u001b[39m"
+                            : "\u001b[31mFail\u001b[39m";
+                        if (validation === false) {
+                            fail += 1;
+                        } else {
+                            pass += 1;
+                        }
+                        log(time(false) + " " + passfail + ": \u001b[36m" + name + "\u001b[39m for \u001b[33m" + group.name + "\u001b[39m");
+                    }, 0);
                 }
             });
         };
     startTime = Date.now();
-    console.log("");
-    perform(posarray[index]);
+    log("");
+    perform(tests[index]);
 }());
