@@ -2,5 +2,6 @@
     "debug"          : true,
     "ignoreSslErrors": true,
     "loadImages"     : false,
-    "sslProtocol"    : "any"
+    "sslProtocol"    : "any",
+    "remoteDebuggerPort": 21003
 }

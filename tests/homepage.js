@@ -1,6 +1,6 @@
 /*global console, document, phantom, require*/
 
-(function () {
+(function runner() {
     "use strict";
     var webpage   = require("webpage"),
         index     = 0,
@@ -9,91 +9,70 @@
         logging   = "error",
         fail      = 0,
         pass      = 0,
-        tests     = [
-            {
-                id   : "70204",
-                name : "BAC",
-                units: [
-                    "id tab-package-tab is absent",
-                    "id flight-add-car-checkbox is absent",
-                    "id flight-add-hotel-checkbox is absent",
-                    "id tab-cruise-tab is absent",
-                    "id tab-activity-tab is absent",
-                    "id tab-homeaway-tab is absent",
-                    "interaction click() on id tab-flight-tab and wait for flight",
-                    "id flight-add-hotel-checkbox is absent"
-                ],
-                url  : "https://travelcenterbankofamericacom.sandbox.dev.sb.karmalab.net/"
-            }, {
-                id   : "70211",
-                name : "BACCASH",
-                units: [
-                    "id tab-package-tab is absent",
-                    "id flight-add-car-checkbox is absent",
-                    "id flight-add-hotel-checkbox is absent",
-                    "id tab-cruise-tab is absent",
-                    "id tab-activity-tab is absent",
-                    "id tab-homeaway-tab is absent",
-                    "interaction click() on id tab-flight-tab and wait for flight",
-                    "id flight-add-hotel-checkbox is absent"
-                ],
-                url  : "https://travelcenter2bankofamericacom.sandbox.dev.sb.karmalab.net/"
-            }, {
-                id   : "70213",
-                name : "BACFIA",
-                units: [
-                    "id tab-package-tab is absent",
-                    "id flight-add-car-checkbox is absent",
-                    "id flight-add-hotel-checkbox is absent",
-                    "id tab-cruise-tab is absent",
-                    "id tab-activity-tab is absent",
-                    "id tab-homeaway-tab is absent",
-                    "interaction click() on id tab-flight-tab and wait for flight",
-                    "id flight-add-hotel-checkbox is absent"
-                ],
-                url  : "https://travelcenterfiacardservicescom.sandbox.dev.sb.karmalab.net/"
-            }, {
-                id   : "70212",
-                name : "BACML",
-                units: [
-                    "id tab-package-tab is absent",
-                    "id flight-add-car-checkbox is absent",
-                    "id flight-add-hotel-checkbox is absent",
-                    "id tab-cruise-tab is absent",
-                    "id tab-activity-tab is absent",
-                    "id tab-homeaway-tab is absent",
-                    "interaction click() on id tab-flight-tab and wait for flight",
-                    "id flight-add-hotel-checkbox is absent"
-                ],
-                url  : "https://travelcentermlcom.sandbox.dev.sb.karmalab.net/"
-            }, {
-                id   : "70205",
-                name : "RBC",
-                units: [
-                    "id tab-package-tab is present",
-                    "id flight-add-car-checkbox is absent",
-                    "id hotel-add-flight-checkbox is present",
-                    "id tab-cruise-tab is absent",
-                    "id tab-activity-tab is absent",
-                    "id tab-homeaway-tab is absent",
-                    "interaction click() on id tab-flight-tab and wait for flight",
-                    "id flight-add-hotel-checkbox is present"
-                ],
-                url  : "https://travelrbcrewardscom.sandbox.dev.sb.karmalab.net/"
-            }
-        ],
-        log       = function (msg) {
+        group     = require("/Users/echeney/phantomjs/tests/tests.js"),
+        log       = function runner_log(msg) {
             console.log(msg);
         },
-        time      = function (finished) {
+        stacktrace  = function runner_stacktrace(stack) {
+            log("Line \u001b[33m" + stack.line + "\u001b[39m in function \u001b[31m" + stack.function + "\u001b[39m of file \u001b[33m" + stack.file + "\u001b[39m");
+        },
+        interaction = {
+            flightSearchResults: function runner_interaction_flightSearchResults(page, pos) {
+                var aa = new Date(),
+                    am = aa.getMonth(),
+                    ad = aa.getDate(),
+                    bm = 0,
+                    bd = 0,
+                    cd = 0,
+                    year = aa.getYear(),
+                    by = "",
+                    fromDate = "",
+                    toDate = "";
+                if (ad > 23) {
+                    bd = "04";
+                    cd = "08";
+                    am += 1;
+                } else {
+                    bd = ad.toString();
+                    cd = (ad + 4).toString();
+                }
+                if (am > 9) {
+                    am = am - 10;
+                    year += 1;
+                } else {
+                    am += 2;
+                }
+                bm = "0" + am.toString();
+                if (bd.length < 2) {
+                    bd = "0" + bd;
+                }
+                if (cd.length < 2) {
+                    cd = "0" + cd;
+                }
+                by = "20" + year.toString().slice(1);
+                if (pos.name === "RBC") {
+                    fromDate = bd + "/" + bm + "/" + by;
+                    toDate   = cd + "/" + bm + "/" + by;
+                } else {
+                    fromDate = bm + "/" + bd + "/" + by;
+                    toDate   = bm + "/" + cd + "/" + by;
+                }
+                log("Filling in search criteria...");
+                page.evaluateJavaScript("function(){document.getElementById(\"flight-origin\").value=\"dfw\";}");
+                page.evaluateJavaScript("function(){document.getElementById(\"flight-destination\").value=\"las\";}");
+                page.evaluateJavaScript("function(){document.getElementById(\"flight-departing\").value=\"" + fromDate + "\";}");
+                page.evaluateJavaScript("function(){document.getElementById(\"flight-returning\").value=\"" + toDate + "\";}");
+                page.evaluateJavaScript("function(){document.getElementById(\"search-button\").click();}");
+            }
+        },
+        time      = function runner_time(finished) {
             var minuteString = "",
                 hourString   = "",
                 secondString = "",
-                finalTime    = "",
                 minutes      = 0,
                 hours        = 0,
                 elapsed      = 0,
-                plural       = function core__proctime_plural(x, y) {
+                plural       = function runner_time_plural(x, y) {
                     var a = "";
                     if (x !== 1) {
                         a = x + y + "s ";
@@ -102,7 +81,7 @@
                     }
                     return a;
                 },
-                minute       = function core__proctime_minute() {
+                minute       = function runner_time_minute() {
                     minutes      = parseInt((elapsed / 60), 10);
                     minuteString = (finished === true)
                         ? plural(minutes, " minute")
@@ -148,7 +127,7 @@
             }
             return "\u001B[36m[" + hourString + ":" + minuteString + ":" + secondString + "]\u001B[39m ";
         },
-        next      = function (array, func) {
+        next      = function runner_next(array, func) {
             var plural = "";
             log("");
             index += 1;
@@ -167,116 +146,200 @@
                 phantom.exit(0);
             }
         },
-        perform   = function performtests(group) {
+        perform   = function runner_perform(group) {
             var page     = webpage.create(),
                 duration = 0,
-                waitFor  = function (callback, timeout) {
+                waitFor  = function runner_perform_waitFor(callback, timeout) {
                     var now   = Date.now(),
                         ready = "",
-                        valid = {},
-                        cycle = function cycle_self() {
+                        cycle = function runner_perform_waitFor_cycle() {
                             var a        = 0,
                                 grouplen = group.units.length,
-                                action   = function actionfunc() {
-                                    var item  = group.units[a],
+                                action   = function runner_perform_waitFor_cycle_action() {
+                                    var item  = (typeof group.units[a] === "function")
+                                            ? group.units[a]()
+                                            : group.units[a],
                                         words = item.split(" "),
                                         query = "function(){return document.getElement",
-                                        valid = "",
-                                        delay = function delayfunc(thing) {
-                                            var delaytest = page.evaluateJavaScript("function(){return document.getElementById(\"" + thing + "\");}").toString();
-                                            if (delaytest === "") {
-                                                return setTimeout(function () {
-                                                    delayfunc(thing);
-                                                }, 1000);
+                                        valid = false,
+                                        start = 0,
+                                        parse = function runner_perform_waitFor_cycle_action_parse(start) {
+                                            var itema = item.slice(start).split(""),
+                                                output = [],
+                                                x = 0,
+                                                y = itema.length,
+                                                z = 0;
+                                            for (x = 0; x < y; x += 1) {
+                                                output.push(itema[x]);
+                                                if (itema[x] === "{") {
+                                                    z += 1;
+                                                } else if (itema[x] === "}") {
+                                                    z -= 1;
+                                                    if (z < 1) {
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (start === words[0].length + 1) {
+                                                words = item.slice(13 + output.length).split(" ");
+                                                words.splice(0, 0, output.join(""));
+                                                words.splice(0, 0, "interaction");
+                                            } else {
+                                                words[2] = output.join("");
+                                            }
+                                        },
+                                        delay = function runner_perform_waitFor_cycle_action_delay(thing) {
+                                            var delaytest = page.evaluateJavaScript(thing).toString();
+                                            console.log(page.evaluateJavaScript("function(){return location.href;}"));
+                                            if (delaytest === "" || delaytest === "false") {
+                                                return setTimeout(function runner_perform_waitFor_cycle_action_delay_setTimeout() {
+                                                    runner_perform_waitFor_cycle_action_delay(thing);
+                                                }, 100);
                                             }
                                             if (a < grouplen) {
-                                                actionfunc();
+                                                runner_perform_waitFor_cycle_action();
                                             } else {
-                                                next(tests, performtests);
+                                                next(group, runner_perform);
                                             }
                                         };
                                     a += 1;
-                                    if (words[0] === "interaction") {
+                                    if (words[0] === "move") {
+                                        start = (words[0].length + 1);
+                                        if (words[1] === "to") {
+                                            words.splice(1, 1);
+                                            start += 3;
+                                        }
+                                        interaction[words[1]](page, group.name);
+                                        start += (words[1].length + 1);
+                                        if (words[2] === "and") {
+                                            words.splice(2, 1);
+                                            start += 4;
+                                        }
+                                        if (words[2] === "wait") {
+                                            words.splice(2, 1);
+                                            start += 5;
+                                        }
+                                        if (words[2] === "for") {
+                                            words.splice(2, 1);
+                                            start += 4;
+                                        }
+                                        if (words[2].indexOf("function(") === 0 || (words[2] === "function" && words[3].indexOf("(") === 0)) {
+                                            parse(start);
+                                        }
+                                        delay(words[2]);
+                                    } else if (words[0] === "interaction") {
+                                        if (words[1].indexOf("function(") === 0 || (words[1] === "function" && words[2].indexOf("(") === 0)) {
+                                            parse(words[0].length + 1);
+                                        }
                                         if (words[2] === "on") {
                                             words.splice(2, 1);
                                         }
-                                        query = "function(){document.getElementById(\"" + words[3] + "\")." + words[1] + ";}";
+                                        if (words[1].indexOf("function") === 0) {
+                                            query = words[1];
+                                        }
+                                        if (words[2] === "id") {
+                                            words.splice(2, 1);
+                                            query = "function(){document.getElementById(\"" + words[2] + "\")." + words[1] + ";}";
+                                            words.splice(1, 1);
+                                        }
                                         page.evaluateJavaScript(query);
-                                        if (words[4] === "and") {
-                                            words.splice(4, 1);
+                                        if (words[2] !== undefined) {
+                                            start = words[0].length + words[1].length + 2;
+                                            if (words[2] === "and") {
+                                                words.splice(2, 1);
+                                                start += 4;
+                                            }
+                                            if (words[2] === "wait") {
+                                                words.splice(2, 1);
+                                                start += 5;
+                                            }
+                                            if (words[2] === "for") {
+                                                words.splice(2, 1);
+                                                start += 4;
+                                            }
+                                            if (words[2].indexOf("function(") === 0 || (words[2] === "function" && words[3].indexOf("(") === 0)) {
+                                                parse(start);
+                                            } else {
+                                                words[2] = "function(){return document.getElementById(\"" + words[2] + "\");}";
+                                            }
+                                            delay(words[2]);
+                                        } else {
+                                            if (a < grouplen) {
+                                                runner_perform_waitFor_cycle_action();
+                                            } else {
+                                                next(group, runner_perform);
+                                            }
                                         }
-                                        if (words[4] === "wait") {
-                                            words.splice(4, 1);
+                                    } else {
+                                        if (words[2] === "is") {
+                                            words.splice(2, 1);
                                         }
-                                        if (words[4] === "for") {
-                                            words.splice(4, 1);
+                                        if (words[0] === "id") {
+                                            query = query + "ById(\"";
+                                        } else if (words[0] === "element") {
+                                            query = query + "sByTagName(\"";
                                         }
-                                        delay(words[4]);
-                                        return false;
+                                        query = query + words[1] + "\");}";
+                                        valid = (words[2] === "absent")
+                                            ? page.evaluateJavaScript(query).toString() === ""
+                                            : page.evaluateJavaScript(query).toString() !== "";
+                                        callback(item, valid);
+                                        if (a < grouplen) {
+                                            runner_perform_waitFor_cycle_action();
+                                        } else {
+                                            next(group, runner_perform);
+                                        }
                                     }
-                                    if (words[2] === "is") {
-                                        words.splice(2, 1);
-                                    }
-                                    if (words[0] === "id") {
-                                        query = query + "ById(\"";
-                                    } else if (words[0] === "element") {
-                                        query = query + "sByTagName(\"";
-                                    }
-                                    query = query + words[1] + "\");}";
-                                    valid = (words[2] === "absent")
-                                        ? page.evaluateJavaScript(query).toString() === ""
-                                        : page.evaluateJavaScript(query).toString() !== "";
-                                    callback(item, valid);
-                                    if (a === grouplen) {
-                                        next(tests, performtests);
-                                        return false;
-                                    }
-                                    return true;
                                 };
-                            ready = page.evaluate(function () {
+                            ready = page.evaluate(function runner_perform_waitFor_cycle_evaluate() {
                                 return document.readyState;
                             });
-                            if (ready !== "complete") {
+                            if (ready === "complete") {
+                                action();
+                            } else {
                                 if (typeof timeout === "number" && (Date.now() - now) + 1 > timeout && timeout > 0) {
                                     fail += 1;
                                     log("\u001b[31mFail:\u001b[39m page took too long load. Moving to next test.");
-                                    return next(tests, performtests);
+                                    return next(group, runner_perform);
                                 }
-                                log("Page is loading... Waiting 2 seconds.");
-                                return setTimeout(cycle_self, 2000);
+                                log("Page is loading... Waiting 2 seconds. :(");
+                                return setTimeout(runner_perform_waitFor_cycle, 2000);
                             }
-                            do {
-                                if (action() === false) {
-                                    break;
-                                }
-                            } while (a < grouplen);
                         };
                     cycle();
                 };
             log("\u001b[33m" + group.name + "\u001b[39m, opening page...");
-            page.onAlert          = function (msg) {
+            page.onAlert          = function runner_perform_onAlert(msg) {
                 if (logging === "all" || logging === "alert") {
-                    return log("\u001b[36mALERT\u001b[39m: " + msg);
+                    return log("\u001b[36mPAGE ALERT\u001b[39m: " + msg);
                 }
                 return {};
             };
-            page.onError          = function (msg) {
+            page.onError          = function runner_perform_onError(msg, trace) {
                 if (logging === "all" || logging === "error") {
-                    return log("\u001b[31mERROR\u001b[39m: " + msg);
+                    log("\u001b[31mPAGE ERROR\u001b[39m: " + msg);
+                    log("");
+                    log("\u001b[31mSTACKTRACE\u001b[39m:");
+                    trace.forEach(stacktrace);
+                    return phantom.exit(1);
                 }
                 return {};
             };
-            page.onConsoleMessage = function (msg) {
+            page.onConsoleMessage = function runner_perform_onConsoleMessage(msg) {
                 if (logging === "all" || logging === "console") {
-                    return log("\u001b[33mCONSOLE\u001b[39m: " + msg);
+                    return log("\u001b[33mPAGE CONSOLE\u001b[39m: " + msg);
                 }
                 return {};
             };
-            page.open(group.url, function (status) {
+            page.onUrlChanged = function runner_perform_onUrlChanged(target) {
+                if (target !== "about:blank") {
+                    log("Moving to page: " + target);
+                }
+            };
+            page.open(group.url, function runner_perform_open(status) {
                 duration = 0;
-                log(status + " opening " + group.url);
                 if (status === "success") {
-                    waitFor(function (name, validation) {
+                    waitFor(function runner_perform_waitFor(name, validation) {
                         var passfail = (validation === true)
                             ? "\u001b[32mPass\u001b[39m"
                             : "\u001b[31mFail\u001b[39m";
@@ -287,10 +350,19 @@
                         }
                         log(time(false) + " " + passfail + ": \u001b[36m" + name + "\u001b[39m for \u001b[33m" + group.name + "\u001b[39m");
                     }, 0);
+                } else {
+                    log("\u001b[31m" + status + "\u001b[39m: Failed to open page " + group.url);
                 }
             });
         };
+    phantom.onError = function runner_onError(msg, trace) {
+        log("\u001b[31mPHANTOM ERROR\u001b[39m: " + msg);
+        log("");
+        log("\u001b[31mSTACKTRACE\u001b[39m:");
+        trace.forEach(stacktrace);
+        phantom.exit(1);
+    };
     startTime = Date.now();
     log("");
-    perform(tests[index]);
+    perform(group[index]);
 }());
