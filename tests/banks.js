@@ -145,6 +145,9 @@
                                         },
                                         delay = function runner_perform_waitFor_cycle_action_delay(thing) {
                                             var delaytest = page.evaluateJavaScript(thing).toString();
+                                            if (delaytest === "exit") {
+                                                phantom.exit(1);
+                                            }
                                             if (delaytest === "" || delaytest === "false") {
                                                 return setTimeout(function runner_perform_waitFor_cycle_action_delay_setTimeout() {
                                                     runner_perform_waitFor_cycle_action_delay(thing);
@@ -163,24 +166,9 @@
                                             words.splice(1, 1);
                                             start += 3;
                                         }
-                                        pages[words[1]](page, group.name);
-                                        start += (words[1].length + 1);
-                                        if (words[2] === "and") {
-                                            words.splice(2, 1);
-                                            start += 4;
-                                        }
-                                        if (words[2] === "wait") {
-                                            words.splice(2, 1);
-                                            start += 5;
-                                        }
-                                        if (words[2] === "for") {
-                                            words.splice(2, 1);
-                                            start += 4;
-                                        }
-                                        if (words[2].indexOf("function(") === 0 || (words[2] === "function" && words[3].indexOf("(") === 0)) {
-                                            parse(start);
-                                        }
-                                        delay(words[2]);
+                                        page.name = pages[words[1]].name;
+                                        pages[words[1]].load(page, group.name);
+                                        delay(pages[words[1]].delay);
                                     } else if (words[0] === "interaction") {
                                         if (words[1].indexOf("function(") === 0 || (words[1] === "function" && words[2].indexOf("(") === 0)) {
                                             parse(words[0].length + 1);
@@ -256,13 +244,13 @@
                                     log("\u001b[31mFail:\u001b[39m page took too long load. Moving to next test.");
                                     return next(group, runner_perform);
                                 }
-                                log("Page is loading... Waiting 2 seconds. :(");
-                                return setTimeout(runner_perform_waitFor_cycle, 2000);
+                                return setTimeout(runner_perform_waitFor_cycle, 100);
                             }
                         };
                     cycle();
                 };
-            log("\u001b[33m" + group.name + "\u001b[39m, opening page...");
+            log("\u001b[33m" + group.name + "\u001b[39m, starting up...");
+            page.name             = "Homepage";
             page.onAlert          = function runner_perform_onAlert(msg) {
                 if (logging === "all" || logging === "alert") {
                     return log("\u001b[36mPAGE ALERT\u001b[39m: " + msg);
@@ -287,7 +275,7 @@
             };
             page.onUrlChanged = function runner_perform_onUrlChanged(target) {
                 if (target !== "about:blank") {
-                    log("Moving to page: " + target);
+                    log("Moving to " + page.name);
                 }
             };
             page.open(group.url, function runner_perform_open(status) {

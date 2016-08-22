@@ -12,7 +12,7 @@ phantomjs-prebuilt
    * good now phantomjs is a global command in the terminal
 
 ## Run it:
-   phantomjs ~/phantomjs/tests/homepage.js
+   phantomjs ~/phantomjs/tests/banks.js
 
 ## Advantages:
 
@@ -30,8 +30,9 @@ phantomjs-prebuilt
 
 ## Lessons Learned:
 
-* **You must provide error messaging**. Be very precise and explicit about throwing errors.  Phantom provides a great, short, and yet complete stacktrace, but the stacktrace is not logged by default.  You must specify this and issue an application kill (phantom.exit(1)).  Otherwise Phantom will silently hang awaiting further instructions.
-* **Injected code is very limited** Execution of injected test logic is limited to modifying, interacting, and returning DOM nodes.  All other logic must occur in the test runner outside the page.  This code must be a string representing a function to be evaluated.  This is the only way to supply variables and closures into the injectable logic.
+* **You must provide error messaging.** Be very precise and explicit about throwing errors.  Phantom provides a great, short, and yet complete stacktrace, but the stacktrace is not logged by default.  You must specify this and issue an application kill (phantom.exit(1)).  Otherwise Phantom will silently hang awaiting further instructions.
+* **Always name functions.** Anonymous functions aren't helpful in stacktraces.
+* **Injected code is very limited.** Execution of injected test logic is limited to modifying, interacting, and returning DOM nodes.  All other logic must occur in the test runner outside the page.  This code must be a string representing a function to be evaluated.  This is the only way to supply variables and closures into the injectable logic.
 
 Example of injectable logic:
 
