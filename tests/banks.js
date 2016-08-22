@@ -9,61 +9,16 @@
         logging   = "error",
         fail      = 0,
         pass      = 0,
+        pages     = require("/Users/echeney/phantomjs/tests/pages.js"),
         group     = require("/Users/echeney/phantomjs/tests/tests.js"),
         log       = function runner_log(msg) {
             console.log(msg);
         },
         stacktrace  = function runner_stacktrace(stack) {
-            log("Line \u001b[33m" + stack.line + "\u001b[39m in function \u001b[31m" + stack.function + "\u001b[39m of file \u001b[33m" + stack.file + "\u001b[39m");
-        },
-        interaction = {
-            flightSearchResults: function runner_interaction_flightSearchResults(page, pos) {
-                var aa = new Date(),
-                    am = aa.getMonth(),
-                    ad = aa.getDate(),
-                    bm = 0,
-                    bd = 0,
-                    cd = 0,
-                    year = aa.getYear(),
-                    by = "",
-                    fromDate = "",
-                    toDate = "";
-                if (ad > 23) {
-                    bd = "04";
-                    cd = "08";
-                    am += 1;
-                } else {
-                    bd = ad.toString();
-                    cd = (ad + 4).toString();
-                }
-                if (am > 9) {
-                    am = am - 10;
-                    year += 1;
-                } else {
-                    am += 2;
-                }
-                bm = "0" + am.toString();
-                if (bd.length < 2) {
-                    bd = "0" + bd;
-                }
-                if (cd.length < 2) {
-                    cd = "0" + cd;
-                }
-                by = "20" + year.toString().slice(1);
-                if (pos.name === "RBC") {
-                    fromDate = bd + "/" + bm + "/" + by;
-                    toDate   = cd + "/" + bm + "/" + by;
-                } else {
-                    fromDate = bm + "/" + bd + "/" + by;
-                    toDate   = bm + "/" + cd + "/" + by;
-                }
-                log("Filling in search criteria...");
-                page.evaluateJavaScript("function(){document.getElementById(\"flight-origin\").value=\"dfw\";}");
-                page.evaluateJavaScript("function(){document.getElementById(\"flight-destination\").value=\"las\";}");
-                page.evaluateJavaScript("function(){document.getElementById(\"flight-departing\").value=\"" + fromDate + "\";}");
-                page.evaluateJavaScript("function(){document.getElementById(\"flight-returning\").value=\"" + toDate + "\";}");
-                page.evaluateJavaScript("function(){document.getElementById(\"search-button\").click();}");
-            }
+            var funcy = (stack.function === "" || typeof stack.function !== "string")
+                ? (anonymous)
+                : stack.function;
+            log("Line \u001b[33m" + stack.line + "\u001b[39m in function \u001b[31m" + funcy + "\u001b[39m of file \u001b[33m" + stack.file + "\u001b[39m");
         },
         time      = function runner_time(finished) {
             var minuteString = "",
@@ -190,7 +145,6 @@
                                         },
                                         delay = function runner_perform_waitFor_cycle_action_delay(thing) {
                                             var delaytest = page.evaluateJavaScript(thing).toString();
-                                            console.log(page.evaluateJavaScript("function(){return location.href;}"));
                                             if (delaytest === "" || delaytest === "false") {
                                                 return setTimeout(function runner_perform_waitFor_cycle_action_delay_setTimeout() {
                                                     runner_perform_waitFor_cycle_action_delay(thing);
@@ -209,7 +163,7 @@
                                             words.splice(1, 1);
                                             start += 3;
                                         }
-                                        interaction[words[1]](page, group.name);
+                                        pages[words[1]](page, group.name);
                                         start += (words[1].length + 1);
                                         if (words[2] === "and") {
                                             words.splice(2, 1);

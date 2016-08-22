@@ -14,8 +14,10 @@
                 "interaction click() on id tab-flight-tab and wait for flight",
                 "id flight-add-car-checkbox is absent",
                 "id flight-add-hotel-checkbox is absent",
-                "move to flightSearchResults and wait for function(){return location.href.indexOf(\"Flights-Search\")>0&&document.readyState===\"complete\";}",
-                "id crossSellOfferList is absent"
+                "move to flightSearchResults and wait for function(){return location.href.indexOf(\"Flights-Search\")>0&&document.getElementById(\"flightModuleList\")!==null&&document.getElementById(\"flightModuleList\").innerHTML.length>100&&document.readyState===\"complete\";}",
+                "id crossSellOfferList is absent",
+                "interaction function(){document.getElementById(\"flightModule1\").getElementsByTagName(\"button\")[0].click();} wait function(){return location.href.indexOf(\"departingModule\")>0;}",
+                "interaction function(){document.getElementById(\"flightModule1\").getElementsByTagName(\"button\")[0].click();} wait function(){return location.href.indexOf(\"departingModule\")>0;}"
             ],
             url  : "https://travelcenterbankofamericacom.sandbox.dev.sb.karmalab.net/"
         }/*, {
